@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
+import { DirectionsRenderer, GoogleMap, MarkerF, OverlayView, useJsApiLoader } from '@react-google-maps/api';
 import { SourceContext } from '../../context/SourceContext';
 import { DestinationContext } from '../../context/DestinationContext';
 
 function GoogleMapSection() {
   const containerStyle = {
-    width: '205%', // Set width to 100% of the viewport width
-    height: '205%', // Set height to 100% of the viewport height
+    width: '205%', 
+    height: '100vh', 
   };
   
   const { source } = useContext(SourceContext);
@@ -19,6 +19,7 @@ function GoogleMapSection() {
 
   const [map, setMap] = useState(null);
 
+  const [directionRoutePoints, setDirectionRoutePoints] = useState([]);
   useEffect(() => {
     if (source && map) {
       map.panTo({
@@ -30,6 +31,10 @@ function GoogleMapSection() {
         lng: source.lng
       });
     }
+    if(source && destination)
+    {
+  directionRoute();
+    }
   }, [source, map]);
 
   useEffect(() => {
@@ -39,7 +44,37 @@ function GoogleMapSection() {
         lng: destination.lng
       });
     }
+
+    if(source&&destination)
+    {
+  directionRoute();
+    }
   }, [destination, map]);
+
+
+  const directionRoute = () => {
+
+    const DirectionsService = new google.maps.DirectionsService();
+
+    DirectionsService.route({
+      origin:{lat: source.lat, lng: source.lng},
+    destination:{lat: destination.lat, lng: destination.lng},
+    travelMode:google.maps.TravelMode.DRIVING}, (result, status) => {
+
+      if (status === google.maps.DirectionsStatus.OK){
+
+        setDirectionRoutePoints(result)
+
+      }else{
+        console.error('Error');
+      }
+
+    })
+    
+
+  }
+
+
 
   const onLoad = React.useCallback(function callback(map) {
     const bounds = new window.google.maps.LatLngBounds(center);
@@ -54,8 +89,9 @@ function GoogleMapSection() {
   return (
     <GoogleMap
       mapContainerStyle={containerStyle}
-      center={center}
-      zoom={10}
+      center={source ? { lat: source.lat, lng: source.lng } : { lat:-26.20227 , lng: 28.04363 }}
+      zoom={8}
+
       onLoad={onLoad}
       onUnmount={onUnmount}
       options={{ mapId: 'c0f82c33615b1955' }}
@@ -67,7 +103,19 @@ function GoogleMapSection() {
             url: 'source.png',
             scaledSize: { width: 20, height: 20 }
           }}
-        />
+          >
+
+          <OverlayView position={{lat: source.lat, lng: source.lng}}
+          mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}>
+
+
+          <div className='p-2 bg-white font-bold inline-block'>
+          <p className='text-black text-[16px]'> {source.label}</p>
+          </div>
+          </OverlayView>
+
+        </MarkerF>
+
       )}
 
 {destination && (
@@ -77,9 +125,31 @@ function GoogleMapSection() {
             url: 'dest.jpg',
             scaledSize: { width: 20, height: 20 }
           }}
-        />
+        >
+          <OverlayView position={{lat: destination.lat, lng: destination.lng}}
+          mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}>
+
+
+          <div className='p-2 bg-white font-bold inline-block'>
+          <p className='text-black text-[16px]'> {destination.label}</p>
+          </div>
+          </OverlayView>
+          </MarkerF>
       )}
 
+
+<DirectionsRenderer
+
+directions={directionRoutePoints}
+options = {{
+  polylineOptions: {
+    strokeColor: '000',
+    strokeWeight: 5
+  },
+  suppressMarkers:true
+
+}}
+/>
     </GoogleMap>
   );
 }
