@@ -5,7 +5,8 @@ const CarListOptions = ({distance}) => {
     const [activeIndex, setActiveIndex]=useState();
     const [selectedCar, setSelectedCar]=useState();
   return (
-    <div className='mt-5 p-5 overflow-auto h-[300px]'>
+    <div className='overflow-auto h- [100vh]'>
+      <h2 className='text-[32px] font-bold'>Choose a ride</h2>
       <h2 className='text-[22px] font-bold'>Recommened</h2>
       {CarListData.map((item, index)=> (
 

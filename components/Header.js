@@ -33,7 +33,7 @@ const Header = () => {
                 ))}
             </div>
             </div>
-            <UserButton/>
+            <UserButton afterSignOutUrl='/'/>
         </div>
     );
 }
